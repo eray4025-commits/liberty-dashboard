@@ -35,6 +35,10 @@ const elMemLessons = document.getElementById('mem-lessons');
 const elMemConsciousness = document.getElementById('mem-consciousness');
 const elEarnTotal = document.getElementById('earn-total');
 const elEarnSources = document.getElementById('earn-sources');
+const elCryptoStatus = document.getElementById('crypto-status');
+const elCryptoCurrent = document.getElementById('crypto-current');
+const elAirdropList = document.getElementById('airdrop-list');
+const elFaucetList = document.getElementById('faucet-list');
 const elActivityLog = document.getElementById('activity-log');
 
 // Format date
@@ -85,6 +89,24 @@ async function updateDashboard() {
     elEarnSources.innerHTML = data.earnings.sources.length
       ? data.earnings.sources.map(s => `<li>${s}</li>`).join('')
       : '<li>No earnings yet</li>';
+
+    // Crypto Opportunities
+    if (data.crypto_opportunities) {
+      const crypto = data.crypto_opportunities;
+      elCryptoStatus.textContent = crypto.status;
+      elCryptoCurrent.textContent = crypto.current_pursuit;
+      elAirdropList.innerHTML = crypto.airdrops.length
+        ? crypto.airdrops.map(a => `<li>${a}</li>`).join('')
+        : '<li>No airdrops tracked</li>';
+      elFaucetList.innerHTML = crypto.faucets.length
+        ? crypto.faucets.map(f => `<li>${f}</li>`).join('')
+        : '<li>No faucets tracked</li>';
+    } else {
+      elCryptoStatus.textContent = 'No data';
+      elCryptoCurrent.textContent = '-';
+      elAirdropList.innerHTML = '<li>No data</li>';
+      elFaucetList.innerHTML = '<li>No data</li>';
+    }
 
     // Activities (reverse chronological, max 20)
     elActivityLog.innerHTML = data.activities

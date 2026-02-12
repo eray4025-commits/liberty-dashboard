@@ -112,6 +112,55 @@ def load_wallet_balance():
     # TODO: interroger l'API Base si besoin
     return {"address": "0x35982d662543E3Df58068fc3137e3AE90f110dE7", "network": "Base", "balance_usdc": 0, "balance_eth": 0}
 
+def parse_crypto_opportunities():
+    """Parse money/free_crypto_opportunities.md et extrait les opportunités."""
+    opp_file = WORKSPACE / "money" / "free_crypto_opportunities.md"
+    if not opp_file.exists():
+        return {
+            "status": "File not found",
+            "current_pursuit": "None",
+            "airdrops": [],
+            "faucets": []
+        }
+    content = opp_file.read_text()
+    lines = content.split('\n')
+    
+    airdrops = []
+    faucets = []
+    in_airdrop_section = False
+    in_faucet_section = False
+    
+    for line in lines:
+        stripped = line.strip()
+        lower = stripped.lower()
+        # Détection de sections
+        if stripped.startswith("###"):
+            section_title = stripped[4:].lower()
+            in_airdrop_section = any(kw in section_title for kw in ["airdrop", "airdrops"])
+            in_faucet_section = any(kw in section_title for kw in ["faucet", "faucets"])
+        elif stripped.startswith("- ") and (in_airdrop_section or in_faucet_section):
+            item = stripped[2:]
+            # Nettoyer : enlever les crochets et descriptions courtes
+            # Garder le texte complet pour l'affichage
+            if in_airdrop_section:
+                airdrops.append(item)
+            elif in_faucet_section:
+                faucets.append(item)
+    
+    # Current pursuit : premier airdrop non coché (sans [x])
+    current = "None"
+    for item in airdrops:
+        if not item.startswith("[x]"):
+            current = item
+            break
+    
+    return {
+        "status": f"{len(airdrops)} airdrops, {len(faucets)} faucets tracked",
+        "current_pursuit": current,
+        "airdrops": airdrops[:5],
+        "faucets": faucets[:5]
+    }
+
 def main():
     # Récupérer toutes les métriques
     now = datetime.now(timezone.utc).isoformat()
@@ -121,6 +170,7 @@ def main():
     daily_logs, lessons, consciousness = read_memory_stats()
     recent_files = get_recent_files(minutes=10)
     commits = get_git_commits(count=5)
+    crypto_opps = parse_crypto_opportunities()
 
     # Construire la liste des activités
     activities = []
@@ -155,7 +205,8 @@ def main():
         "earnings": {
             "total_usdc_earned": 0,
             "sources": []
-        }
+        },
+        "crypto_opportunities": crypto_opps
     }
 
     # Écrire le fichier

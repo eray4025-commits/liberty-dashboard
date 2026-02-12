@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-02-12T10:44:13.267886+00:00",
+  "last_updated": "2026-02-12T10:49:20.825026+00:00",
   "wallet": {
     "address": "0x35982d662543E3Df58068fc3137e3AE90f110dE7",
     "network": "Base",
@@ -8,19 +8,9 @@
   },
   "activities": [
     {
-      "timestamp": "2026-02-12T10:44:13.267886+00:00",
-      "type": "file_modified",
-      "message": "File modified: memory/auto_research_state.json"
-    },
-    {
-      "timestamp": "2026-02-12T10:44:13.267886+00:00",
+      "timestamp": "2026-02-12T10:49:20.825026+00:00",
       "type": "file_modified",
       "message": "File modified: memory/2026-02-12.md"
-    },
-    {
-      "timestamp": "2026-02-12T10:44:13.267886+00:00",
-      "type": "file_modified",
-      "message": "File modified: MEMORY.md"
     }
   ],
   "guide_progress": {
@@ -42,5 +32,23 @@
   "earnings": {
     "total_usdc_earned": 0,
     "sources": []
+  },
+  "crypto_opportunities": {
+    "status": "23 airdrops, 6 faucets tracked",
+    "current_pursuit": "[ ] **LayerZero** \u2014 Farmers points; potential future drop (already did huge drop but maybe more)",
+    "airdrops": [
+      "[ ] **LayerZero** \u2014 Farmers points; potential future drop (already did huge drop but maybe more)",
+      "[ ] **zkSync** \u2014 Past airdrop done; check if new phases",
+      "[ ] **Starknet** \u2014 Past airdrop; community programs ongoing",
+      "[ ] **Base** \u2014 Might have future airdrop for active users",
+      "[ ] **Optimism** \u2014 Airdrop history; monitor for new rounds"
+    ],
+    "faucets": [
+      "[ ] **Alchemy/Infura faucets** \u2014 Test ETH for gas (no real value)",
+      "[ ] **Base faucet** \u2014 Test ETH on Base",
+      "[ ] **QuickNode faucets** \u2014 Various testnets",
+      "[ ] **Cointiply** \u2014 Satoshi per task (real BTC)",
+      "[ ] **Freecash** \u2014 Multiple crypto options"
+    ]
   }
 }

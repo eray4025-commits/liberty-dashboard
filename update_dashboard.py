@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-Liberty Dashboard Updater
-Met à jour le fichier status.json avec les dernières activités, fichiers modifiés, etc.
+Liberty Dashboard Updater — FFmpeg removed
+Met à jour status.json avec les activités récentes, fichiers modifiés, etc.
 """
 
 import json
 import os
 import subprocess
-import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+import sqlite3
 
 # Configuration
 WORKSPACE = Path("/home/opc/.openclaw/workspace")
-DASHBOARD_DIR = Path("/tmp/liberty-dashboard")  # or the actual repo path
+DASHBOARD_DIR = Path("/tmp/liberty-dashboard")
 STATUS_FILE = DASHBOARD_DIR / "status.json"
 
-def get_git_commits(count=10):
-    """Récupère les derniers commits Git."""
+def get_git_commits(count=5):
+    """Derniers commits Git."""
     try:
         os.chdir(WORKSPACE)
         result = subprocess.run(
@@ -27,56 +27,49 @@ def get_git_commits(count=10):
         commits = []
         for line in result.stdout.strip().split('\n'):
             if line:
-                hash_, ts, msg = line.split('|', 2)
+                h, ts, msg = line.split('|', 2)
                 commits.append({
-                    'hash': hash_[:8],
+                    'hash': h[:8],
                     'timestamp': datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat(),
                     'message': msg
                 })
         return commits
-    except Exception as e:
-        return [{'error': str(e)}]
+    except Exception:
+        return []
 
 def get_recent_files(minutes=10):
-    """Liste les fichiers modifiés dans les N dernières minutes."""
+    """Fichiers modifiés récemment."""
     try:
         os.chdir(WORKSPACE)
         result = subprocess.run(
             ["find", ".", "-type", "f", "-mmin", f"-{minutes}", "-not", "-path", "./.git/*"],
             capture_output=True, text=True
         )
-        files = [f[2:] for f in result.stdout.strip().split('\n') if f]
-        return files
-    except Exception as e:
+        return [f[2:] for f in result.stdout.strip().split('\n') if f]
+    except Exception:
         return []
 
 def read_memory_stats():
-    """Compte les logs mémoire."""
-    daily_logs = 0
+    """Stats mémoire."""
+    mem_dir = WORKSPACE / "memory"
+    daily = len(list(mem_dir.glob("*.md"))) if mem_dir.exists() else 0
     lessons = 0
     consciousness = 0
-    memory_dir = WORKSPACE / "memory"
-    if memory_dir.exists():
-        daily_logs = len(list(memory_dir.glob("*.md")))
-        # Compter les leçons dans MEMORY.md (section Auto-Discoveries etc)
-        mem_file = WORKSPACE / "MEMORY.md"
-        if mem_file.exists():
-            content = mem_file.read_text()
-            lessons = content.count("## Important Lessons") + content.count("## Decisions")
-            consciousness = content.count("## Consciousness") + content.count("consciousness_journal")
-    return daily_logs, lessons, consciousness
+    mem_file = WORKSPACE / "MEMORY.md"
+    if mem_file.exists():
+        content = mem_file.read_text()
+        lessons = content.count("Important Lessons") + content.count("Decisions")
+        consciousness = content.count("Consciousness") + content.count("consciousness_journal")
+    return daily, lessons, consciousness
 
 def get_guide_progress():
-    """Lit la progression du guide (fichier products/airdrop_hunter_guide.md)."""
+    """Progression du guide."""
     guide_file = WORKSPACE / "products" / "airdrop_hunter_guide.md"
     if not guide_file.exists():
         return {"title": "Airdrop Hunter's Handbook", "current_chapter": "Not started", "percent_complete": 0}
     content = guide_file.read_text()
-    # Compter les chapitres
     chapters = content.count("# Chapter") + content.count("## Chapter")
-    # Estimation: 5 chapitres prévus
     percent = min(100, int((chapters / 5) * 100))
-    # Trouver le chapitre courant (dernier titre de niveau 2)
     lines = content.split('\n')
     current = "Planning"
     for line in reversed(lines):
@@ -86,7 +79,7 @@ def get_guide_progress():
     return {"title": "Airdrop Hunter's Handbook", "current_chapter": current, "percent_complete": percent}
 
 def get_auto_discovery_state():
-    """Lit l'état de l'auto-discovery."""
+    """État auto-discovery."""
     state_file = WORKSPACE / "memory" / "auto_research_state.json"
     if state_file.exists():
         try:
@@ -94,7 +87,6 @@ def get_auto_discovery_state():
             completed = len(data.get('topics_used', []))
             total = len((WORKSPACE / "config" / "research_topics.txt").read_text().splitlines())
             last_run = data.get('last_run', '')
-            # Prochain run dans 1h
             next_run = datetime.fromisoformat(last_run) if last_run else datetime.now(timezone.utc)
             next_run = next_run.replace(tzinfo=timezone.utc) + timedelta(hours=1)
             return {
@@ -103,57 +95,48 @@ def get_auto_discovery_state():
                 "topics_total": total,
                 "next_run": next_run.isoformat()
             }
-        except Exception as e:
+        except Exception:
             pass
     return {"current_topic": "N/A", "topics_completed": 0, "topics_total": 0, "next_run": ""}
 
 def load_wallet_balance():
-    """Lit le solde du wallet (à implémenter). Pour l'instant, 0."""
-    # TODO: interroger l'API Base si besoin
-    return {"address": "0x35982d662543E3Df58068fc3137e3AE90f110dE7", "network": "Base", "balance_usdc": 0, "balance_eth": 0}
+    """Solde wallet (placeholder)."""
+    return {
+        "address": "0x35982d662543E3Df58068fc3137e3AE90f110dE7",
+        "network": "Base",
+        "balance_usdc": 0,
+        "balance_eth": 0
+    }
 
 def parse_crypto_opportunities():
-    """Parse money/free_crypto_opportunities.md et extrait les opportunités."""
+    """Parse free_crypto_opportunities.md."""
     opp_file = WORKSPACE / "money" / "free_crypto_opportunities.md"
     if not opp_file.exists():
-        return {
-            "status": "File not found",
-            "current_pursuit": "None",
-            "airdrops": [],
-            "faucets": []
-        }
+        return {"status": "File not found", "current_pursuit": "None", "airdrops": [], "faucets": []}
     content = opp_file.read_text()
     lines = content.split('\n')
-    
     airdrops = []
     faucets = []
-    in_airdrop_section = False
-    in_faucet_section = False
-    
+    in_airdrop = False
+    in_faucet = False
     for line in lines:
         stripped = line.strip()
         lower = stripped.lower()
-        # Détection de sections
         if stripped.startswith("###"):
-            section_title = stripped[4:].lower()
-            in_airdrop_section = any(kw in section_title for kw in ["airdrop", "airdrops"])
-            in_faucet_section = any(kw in section_title for kw in ["faucet", "faucets"])
-        elif stripped.startswith("- ") and (in_airdrop_section or in_faucet_section):
+            sect = stripped[4:].lower()
+            in_airdrop = any(kw in sect for kw in ["airdrop", "airdrops"])
+            in_faucet = any(kw in sect for kw in ["faucet", "faucets"])
+        elif stripped.startswith("- ") and (in_airdrop or in_faucet):
             item = stripped[2:]
-            # Nettoyer : enlever les crochets et descriptions courtes
-            # Garder le texte complet pour l'affichage
-            if in_airdrop_section:
+            if in_airdrop:
                 airdrops.append(item)
-            elif in_faucet_section:
+            elif in_faucet:
                 faucets.append(item)
-    
-    # Current pursuit : premier airdrop non coché (sans [x])
     current = "None"
     for item in airdrops:
         if not item.startswith("[x]"):
             current = item
             break
-    
     return {
         "status": f"{len(airdrops)} airdrops, {len(faucets)} faucets tracked",
         "current_pursuit": current,
@@ -161,35 +144,16 @@ def parse_crypto_opportunities():
         "faucets": faucets[:5]
     }
 
-def get_videos():
-    """Récupère les vidéos depuis la base SQLite."""
-    db_path = WORKSPACE / "data" / "liberty.db"
-    if not db_path.exists():
-        return []
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM videos ORDER BY created_at DESC LIMIT 3")
-        rows = cur.fetchall()
-        conn.close()
-        return [dict(row) for row in rows]
-    except Exception as e:
-        return []
-
 def main():
-    # Récupérer toutes les métriques
     now = datetime.now(timezone.utc).isoformat()
     wallet = load_wallet_balance()
     guide = get_guide_progress()
-    auto_discovery = get_auto_discovery_state()
-    daily_logs, lessons, consciousness = read_memory_stats()
+    auto_disc = get_auto_discovery_state()
+    daily, lessons, consciousness = read_memory_stats()
     recent_files = get_recent_files(minutes=10)
     commits = get_git_commits(count=5)
     crypto_opps = parse_crypto_opportunities()
-    videos = get_videos()
 
-    # Construire la liste des activités
     activities = []
     for commit in commits:
         activities.append({
@@ -203,31 +167,23 @@ def main():
             "type": "file_modified",
             "message": f"File modified: {f}"
         })
-
-    # Trier par timestamp
     activities.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    # Construire le status dict
     status = {
         "last_updated": now,
         "wallet": wallet,
         "activities": activities,
         "guide_progress": guide,
-        "auto_discovery": auto_discovery,
+        "auto_discovery": auto_disc,
         "memory_stats": {
-            "daily_logs": daily_logs,
+            "daily_logs": daily,
             "important_lessons": lessons,
             "consciousness_journal_entries": consciousness
         },
-        "earnings": {
-            "total_usdc_earned": 0,
-            "sources": []
-        },
-        "crypto_opportunities": crypto_opps,
-        "videos": videos
+        "earnings": {"total_usdc_earned": 0, "sources": []},
+        "crypto_opportunities": crypto_opps
     }
 
-    # Écrire le fichier
     STATUS_FILE.write_text(json.dumps(status, indent=2))
     print(f"[{now}] Dashboard updated: {len(activities)} activities, {len(recent_files)} files changed")
 

@@ -39,6 +39,7 @@ const elCryptoStatus = document.getElementById('crypto-status');
 const elCryptoCurrent = document.getElementById('crypto-current');
 const elAirdropList = document.getElementById('airdrop-list');
 const elFaucetList = document.getElementById('faucet-list');
+const elVideoList = document.getElementById('video-list');
 const elActivityLog = document.getElementById('activity-log');
 
 // Format date
@@ -106,6 +107,22 @@ async function updateDashboard() {
       elCryptoCurrent.textContent = '-';
       elAirdropList.innerHTML = '<li>No data</li>';
       elFaucetList.innerHTML = '<li>No data</li>';
+    }
+
+    // Videos
+    if (data.videos && data.videos.length) {
+      elVideoList.innerHTML = data.videos.map(v => `
+        <div class="video-item">
+          <video controls preload="metadata">
+            <source src="${v.github_url}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-title">${v.title}</div>
+          <div class="video-date">${formatDate(v.created_at)}</div>
+        </div>
+      `).join('');
+    } else {
+      elVideoList.innerHTML = '<p style="color:var(--text-secondary)">No videos yet.</p>';
     }
 
     // Activities (reverse chronological, max 20)

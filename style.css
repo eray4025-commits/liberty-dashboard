@@ -171,34 +171,6 @@ header h1 {
   word-break: break-word;
 }
 
-.video-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-}
-
-.video-item {
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.video-item video {
-  width: 100%;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-
-.video-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.video-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
 footer {
   text-align: center;
   padding: 20px;

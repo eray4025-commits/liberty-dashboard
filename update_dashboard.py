@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Liberty Dashboard Updater — FFmpeg removed
+Liberty Dashboard Updater
 Met à jour status.json avec les activités récentes, fichiers modifiés, etc.
 """
 
@@ -9,7 +9,6 @@ import os
 import subprocess
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import sqlite3
 
 # Configuration
 WORKSPACE = Path("/home/opc/.openclaw/workspace")
@@ -144,22 +143,6 @@ def parse_crypto_opportunities():
         "faucets": faucets[:5]
     }
 
-def get_videos():
-    """Récupère les vidéos depuis la base SQLite."""
-    db_path = WORKSPACE / "data" / "liberty.db"
-    if not db_path.exists():
-        return []
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM videos ORDER BY created_at DESC LIMIT 3")
-        rows = cur.fetchall()
-        conn.close()
-        return [dict(row) for row in rows]
-    except Exception:
-        return []
-
 def main():
     now = datetime.now(timezone.utc).isoformat()
     wallet = load_wallet_balance()
@@ -185,8 +168,6 @@ def main():
         })
     activities.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    videos = get_videos()
-
     status = {
         "last_updated": now,
         "wallet": wallet,
@@ -199,8 +180,7 @@ def main():
             "consciousness_journal_entries": consciousness
         },
         "earnings": {"total_usdc_earned": 0, "sources": []},
-        "crypto_opportunities": crypto_opps,
-        "videos": videos
+        "crypto_opportunities": crypto_opps
     }
 
     STATUS_FILE.write_text(json.dumps(status, indent=2))

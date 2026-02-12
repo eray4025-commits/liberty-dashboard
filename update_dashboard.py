@@ -161,6 +161,22 @@ def parse_crypto_opportunities():
         "faucets": faucets[:5]
     }
 
+def get_videos():
+    """Récupère les vidéos depuis la base SQLite."""
+    db_path = WORKSPACE / "data" / "liberty.db"
+    if not db_path.exists():
+        return []
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM videos ORDER BY created_at DESC LIMIT 3")
+        rows = cur.fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+    except Exception as e:
+        return []
+
 def main():
     # Récupérer toutes les métriques
     now = datetime.now(timezone.utc).isoformat()
@@ -171,6 +187,7 @@ def main():
     recent_files = get_recent_files(minutes=10)
     commits = get_git_commits(count=5)
     crypto_opps = parse_crypto_opportunities()
+    videos = get_videos()
 
     # Construire la liste des activités
     activities = []
@@ -206,7 +223,8 @@ def main():
             "total_usdc_earned": 0,
             "sources": []
         },
-        "crypto_opportunities": crypto_opps
+        "crypto_opportunities": crypto_opps,
+        "videos": videos
     }
 
     # Écrire le fichier

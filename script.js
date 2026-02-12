@@ -2,6 +2,20 @@
 
 const API_ENDPOINT = 'status.json'; // Local file (served by GitHub Pages)
 
+// Logout handler
+document.addEventListener('DOMContentLoaded', function() {
+  const logoutLink = document.getElementById('logout-link');
+  if (logoutLink) {
+    logoutLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('liberty_dashboard_auth');
+      window.location.href = 'login.html';
+    });
+  }
+});
+
+// ... reste inchangé
+
 // DOM Elements
 const elLastUpdate = document.getElementById('last-update');
 const elWalletAddress = document.getElementById('wallet-address');

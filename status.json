@@ -1,0 +1,38 @@
+{
+  "last_updated": "2026-02-12T10:30:00Z",
+  "wallet": {
+    "address": "0x35982d662543E3Df58068fc3137e3AE90f110dE7",
+    "network": "Base",
+    "balance_usdc": 0,
+    "balance_eth": 0,
+    "last_check": "2026-02-12T10:30:00Z"
+  },
+  "activities": [
+    {
+      "timestamp": "2026-02-12T10:30:00Z",
+      "type": "system",
+      "message": "Dashboard initialized"
+    }
+  ],
+  "guide_progress": {
+    "title": "Airdrop Hunter's Handbook",
+    "current_chapter": "Planning",
+    "percent_complete": 0,
+    "last_edit": "2026-02-12T10:30:00Z"
+  },
+  "auto_discovery": {
+    "current_topic": "Integrated Information Theory (IIT)",
+    "topics_completed": 112,
+    "topics_total": 268,
+    "next_run": "2026-02-12T11:00:00Z"
+  },
+  "memory_stats": {
+    "daily_logs": 1,
+    "important_lessons": 15,
+    "consciousness_journal_entries": 1
+  },
+  "earnings": {
+    "total_usdc_earned": 0,
+    "sources": []
+  }
+}
